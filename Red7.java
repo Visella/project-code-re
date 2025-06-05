@@ -13,33 +13,20 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-/**
- * An implementation of the game Red7, by Asmadi Games.  Only includes two card colors: violet and indigo.  Thanks to Asmadi Games for granting me permission to use their game rules for educational purposes.  This implementation is intended to be terrible, and will be updated during the semester in a Software Engineering course.
- *
- * @author Kyle Burke <kwburke@plymouth.edu>
- */
 public class Red7 extends Application {
     
-    /**
-     * Main method to run the game.
-     */
     public static void main(String[] args) {
         launch(args);
     }
     
-    /**
-     * Removes a random card from the deck and puts it in the appropriate collection.
-     */
     public static void dealCard(boolean[] redsInDeck, boolean[] yellowsInDeck, boolean[] violetsInDeck, ArrayList<String> targetColors, ArrayList<Integer> targetNumbers) {
         
         boolean workingCard = false;
         
-        //keep trying to generate a working card
         while (!workingCard) {
-        
-            //generate a random index
+    
             Random randGen = new Random();
-            int cardIndex = randGen.nextInt(21); //21 because we only have three colors so far
+            int cardIndex = randGen.nextInt(21);
             int colorIndex = cardIndex / 7;
             int numberIndex = cardIndex % 7;
             
@@ -52,7 +39,6 @@ public class Red7 extends Application {
             
             workingCard = cardArray[numberIndex];
             if (workingCard) {
-                //add the card to the output lists
                 if (colorIndex == 0) {
                     targetColors.add("Red");
                 } else if (colorIndex == 1) {
@@ -62,29 +48,22 @@ public class Red7 extends Application {
                 }
                 targetNumbers.add(numberIndex + 1);
                 
-                //remove the card from the deck
                 cardArray[numberIndex] = false;
             }
         }
     }
     
-    /**
-     * Displays the whole game state.
-     */
     public static void displayAll(Stage stage, String canvasColor, ArrayList<String> playerAPaletteColors, ArrayList<Integer> playerAPaletteNumbers, ArrayList<String> playerBPaletteColors, ArrayList<Integer> playerBPaletteNumbers, ArrayList<String> playerAHandColors, ArrayList<Integer> playerAHandNumbers, ArrayList<String> playerBHandColors, ArrayList<Integer> playerBHandNumbers) {
         VBox board = new VBox();
         board.setSpacing(2);
-        
-        //player A Hand
+
         Text handText = new Text("Player A's Hand");
         board.getChildren().add(handText);
         board.getChildren().add(getCardRow(playerAHandColors, playerAHandNumbers));
         
-        //player A Palette
         board.getChildren().add(new Text("Player A's Palette:"));
         board.getChildren().add(getCardRow(playerAPaletteColors, playerAPaletteNumbers));
         
-        //the canvas
         board.getChildren().add(new Text("Canvas:"));
         Rectangle canvasRectangle;
         if (canvasColor.equals("Red")) {
@@ -96,23 +75,17 @@ public class Red7 extends Application {
         }
         board.getChildren().add(canvasRectangle);
         
-        //player B Palette
         board.getChildren().add(new Text("Player B's Palette:"));
         board.getChildren().add(getCardRow(playerBPaletteColors, playerBPaletteNumbers));
-        
-        //player B Hand
+
         board.getChildren().add(new Text("Player B's Hand"));
         board.getChildren().add(getCardRow(playerBHandColors, playerBHandNumbers));
-        
-        //set up the scene and make sure it's visible
+
         stage.setScene(new Scene(board));
         stage.show();
         stage.sizeToScene();
     }
     
-    /**
-     * Gets a HBox for a single row of cards.
-     */
     public static HBox getCardRow(ArrayList<String> colors, ArrayList<Integer> numbers) {
         HBox cardsRow = new HBox();
         for (int i = 0; i < colors.size(); i++) {
@@ -122,14 +95,9 @@ public class Red7 extends Application {
         return cardsRow;
     }
     
-    
-    /**
-     * Gets a StackPane with the graphics for a single card.
-     */
     public static StackPane getCardGraphics(String color, int number) {
         StackPane cardPane = new StackPane();
         
-        //add the color as a background rectangle
         Rectangle cardBase = new Rectangle(125, 175, Color.VIOLET);
         if (color.equals("Red")) {
             cardBase = new Rectangle(125, 175, Color.RED);
@@ -137,8 +105,7 @@ public class Red7 extends Application {
             cardBase = new Rectangle(125, 175, Color.YELLOW);
         }
         cardPane.getChildren().add(cardBase);
-        
-        //now add the text above that
+
         Text cardNumberText = new Text("" + number);
         cardNumberText.setFont(Font.font("System", FontWeight.BOLD, 50.0));
         if (color.equals("Yellow")) {
@@ -151,9 +118,6 @@ public class Red7 extends Application {
         return cardPane;
     }
     
-    /**
-     * Determines whether the current player is winning.
-     */
     public static boolean playerWinning(String canvasColor, ArrayList<String> playerPaletteColors, ArrayList<Integer> playerPaletteNumbers, ArrayList<String> opponentPaletteColors, ArrayList<Integer> opponentPaletteNumbers) {
         if (canvasColor.equals("Red")) {
             String maxPlayerColor = "Nothing";
@@ -190,7 +154,6 @@ public class Red7 extends Application {
             System.out.println("Player's max card: " + maxPlayerColor + " " + maxPlayerNumber);
             System.out.println("Opponent's max card: " + maxOpponentColor + " " + maxOpponentNumber);
             
-            //check whether player is winning
             if (maxPlayerNumber > maxOpponentNumber) {
                 return true;
             } else if (maxPlayerNumber == maxOpponentNumber) {
@@ -203,9 +166,6 @@ public class Red7 extends Application {
                 return false;
             }
         } else if (canvasColor.equals("Yellow")) {
-            //Yellow is "Most of one color"
-            
-            //find player's biggest color
             ArrayList<Integer> playerReds = new ArrayList<Integer>();
             ArrayList<Integer> playerYellows = new ArrayList<Integer>();
             ArrayList<Integer> playerViolets = new ArrayList<Integer>();
@@ -220,15 +180,14 @@ public class Red7 extends Application {
                     playerViolets.add(number);
                 }
             }
-            //start with the reds
             ArrayList<Integer> maxPlayerList = playerReds;
             String playerMaxColor = "Red";
-            //check whether the yellows are bigger
+
             if (playerYellows.size() > maxPlayerList.size()) {
                 maxPlayerList = playerYellows;
                 playerMaxColor = "Yellow";
             } else if (playerYellows.size() == maxPlayerList.size()) {
-                //now check the biggest element in each
+
                 int maxHighest = 0;
                 for (int i = 0; i < maxPlayerList.size(); i++) {
                     maxHighest = Math.max(maxHighest, maxPlayerList.get(i));
@@ -242,12 +201,11 @@ public class Red7 extends Application {
                     playerMaxColor = "Yellow";
                 }
             }
-            //now check whether the violets are bigger
             if (playerViolets.size() > maxPlayerList.size()) {
                 maxPlayerList = playerViolets;
                 playerMaxColor = "Violet";
             } else if (playerViolets.size() == maxPlayerList.size()) {
-                //now check the biggest element in each
+
                 int maxHighest = 0;
                 for (int i = 0; i < maxPlayerList.size(); i++) {
                     maxHighest = Math.max(maxHighest, maxPlayerList.get(i));
@@ -262,7 +220,6 @@ public class Red7 extends Application {
                 }
             }
             
-            //find opponent's biggest color
             ArrayList<Integer> opponentReds = new ArrayList<Integer>();
             ArrayList<Integer> opponentYellows = new ArrayList<Integer>();
             ArrayList<Integer> opponentViolets = new ArrayList<Integer>();
@@ -277,15 +234,13 @@ public class Red7 extends Application {
                     opponentViolets.add(number);
                 }
             }
-            //start with the reds
             ArrayList<Integer> maxOpponentList = opponentReds;
             String opponentMaxColor = "Red";
-            //check whether the yellows are bigger
             if (opponentYellows.size() > maxOpponentList.size()) {
                 maxOpponentList = opponentYellows;
                 opponentMaxColor = "Yellow";
             } else if (opponentYellows.size() == maxOpponentList.size()) {
-                //now check the biggest element in each
+
                 int maxHighest = 0;
                 for (int i = 0; i < maxOpponentList.size(); i++) {
                     maxHighest = Math.max(maxHighest, maxOpponentList.get(i));
@@ -299,12 +254,10 @@ public class Red7 extends Application {
                     opponentMaxColor = "Yellow";
                 }
             }
-            //now check whether the violets are bigger
             if (opponentViolets.size() > maxOpponentList.size()) {
                 maxOpponentList = opponentViolets;
                 opponentMaxColor = "Violet";
             } else if (opponentViolets.size() == maxOpponentList.size()) {
-                //now check the biggest element in each
                 int maxHighest = 0;
                 for (int i = 0; i < maxOpponentList.size(); i++) {
                     maxHighest = Math.max(maxHighest, maxOpponentList.get(i));
@@ -318,8 +271,7 @@ public class Red7 extends Application {
                     opponentMaxColor = "Violet";
                 }
             }
-            
-            //now compare the two biggest lists
+
             if (maxPlayerList.size() > maxOpponentList.size()) {
                 return true;
             } else if (maxPlayerList.size() == maxOpponentList.size()) {
@@ -347,9 +299,6 @@ public class Red7 extends Application {
                 return false;
             }
         } else {
-            //the remaining color is Violet: Most Cards Below 4
-            
-            //set up the player's cards that count
             ArrayList<String> playerColorsBelow4 = new ArrayList<String>();
             ArrayList<Integer> playerNumbersBelow4 = new ArrayList<Integer>();
             String playerMaxColorBelow4 = "Nothing";
@@ -372,7 +321,6 @@ public class Red7 extends Application {
                 }
             }
             
-            //set up the opponent's cards that count
             ArrayList<String> opponentColorsBelow4 = new ArrayList<String>();
             ArrayList<Integer> opponentNumbersBelow4 = new ArrayList<Integer>();
             String opponentMaxColorBelow4 = "Nothing";
@@ -394,8 +342,6 @@ public class Red7 extends Application {
                     }
                 }
             }
-            
-            //compare the two sets to see who wins!
             if (playerColorsBelow4.size() > opponentColorsBelow4.size()) {
                 return true;
             } else if (playerColorsBelow4.size() == opponentColorsBelow4.size()) {
@@ -411,10 +357,7 @@ public class Red7 extends Application {
             }
         }  
     }
-    
-    /**
-     * Clones an ArrayList.
-     */
+
     public static <T> ArrayList<T>  cloneAL(ArrayList<T> toClone) {
         ArrayList<T> clone = new ArrayList<T>();
         for (T item : toClone) {
@@ -422,53 +365,37 @@ public class Red7 extends Application {
         }
         return clone;
     }
-    
-    /**
-     * Replaces an array list's contents with another.
-     */
+
     public static <T> void replaceContentsWithAnother(ArrayList<T> toReplace, ArrayList<T> newContents) {
         toReplace.clear();
         for (T item : newContents) {
             toReplace.add(item);
         }
     }
-
-    /**
-     * Start the game.
-     */
-public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) {
     
         primaryStage.setTitle("Red 7");
         
-        //cards that are still in the deck
         boolean[] violetsInDeck = new boolean[] {true, true, true, true, true, true, true};
         boolean[] yellowsInDeck = new boolean[] {true, true, true, true, true, true, true};
         boolean[] redsInDeck = new boolean[] {true, true, true, true, true, true, true};
         
-        //canvas
         String canvasColor = "Red";
         
         Player playerA = new Player();
         
-        //deal cards to playerA
-        //1 to the palette
         dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerA.getPaletteColors(), playerA.getPaletteNumbers());
-        //4 to the hand
         for (int i = 0; i < 4; i++) {
             dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerA.getHandColors(), playerA.getHandNumbers());
         }
         
         Player playerB = new Player();
 
-        //deal cards to playerB
-        //1 to the palette
         dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerB.getPaletteColors(), playerB.getPaletteNumbers());
-        //4 to the hand
         for (int i = 0; i < 4; i++) {
             dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerB.getHandColors(), playerB.getHandNumbers());
         }
-        
-        //set the first player based on who is winning.
+
         int currentPlayer;
         if (playerWinning(canvasColor, playerA.getPaletteColors(), playerA.getPaletteNumbers(), playerB.getPaletteColors(), playerB.getPaletteNumbers())) {
             currentPlayer = 1;
@@ -481,7 +408,6 @@ public void start(Stage primaryStage) {
         
         System.out.println("Player " + player + " goes first!");
         
-        /* */
         while (true) {
         
             displayAll(primaryStage, canvasColor, playerA.getPaletteColors(), playerA.getPaletteNumbers(), playerB.getPaletteColors(), playerB.getPaletteNumbers(), playerA.getHandColors(), playerA.getHandNumbers(), playerB.getHandColors(), playerB.getHandNumbers());
@@ -550,7 +476,6 @@ public void start(Stage primaryStage) {
                 playToPalette = true;
                 playToCanvas = true;
             } else {
-                //concede
                 break;
             }
             
@@ -624,7 +549,6 @@ public void start(Stage primaryStage) {
             }
                 
             if (playerWinning(newCanvasColor, newPlayer.getPaletteColors(), newPlayer.getPaletteNumbers(), opponent.getPaletteColors(), opponent.getPaletteNumbers())) {
-                //great!  Apply the move!
                 System.out.println("That move works!");
                 replaceContentsWithAnother(currPlayer.getHandColors(), newPlayer.getHandColors());
                 replaceContentsWithAnother(currPlayer.getHandNumbers(), newPlayer.getHandNumbers());
@@ -632,7 +556,6 @@ public void start(Stage primaryStage) {
                 replaceContentsWithAnother(currPlayer.getPaletteNumbers(), newPlayer.getPaletteNumbers());
                 canvasColor = newCanvasColor;
                 
-                //switch players
                 currentPlayer = (currentPlayer + 1) % 2; //move to the next player
                 player = players[currentPlayer];
             } else {
@@ -642,13 +565,6 @@ public void start(Stage primaryStage) {
             
             
         }
-        /* */
-        
-        System.out.println("Player " + player + " loses!");
-        
-        
+        System.out.println("Player " + player + " loses!");  
     }
-        
-
-
-} //end of Red7
+} 
