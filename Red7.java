@@ -1,12 +1,9 @@
 import java.util.Random;
 import java.util.ArrayList;
 import javafx.application.Application;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Separator;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
