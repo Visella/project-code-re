@@ -24,6 +24,7 @@ public class Red7 extends Application {
     private boolean[] redsInDeck;
     private boolean[] yellowsInDeck;
     private boolean[] violetsInDeck;
+    
     public static void main(String[] args) {
         launch(args);
     }
@@ -224,14 +225,13 @@ public class Red7 extends Application {
             ArrayList<Integer> playerYellows = new ArrayList<Integer>();
             ArrayList<Integer> playerViolets = new ArrayList<Integer>();
             for (int i = 0; i < playerPalette.size(); i++) {
-                String color = playerPalette.get(i).getColor();
-                int number = playerPalette.get(i).getNumber();
-                if (color.equals("Red")) {
-                    playerReds.add(number);
-                } else if (color.equals("Yellow")) {
-                    playerYellows.add(number);
-                } else if (color.equals("Violet")) {
-                    playerViolets.add(number);
+                Card card = playerPalette.get(i);
+                if (card.getColor().equals("Red")) {
+                    playerReds.add(card.getNumber());
+                } else if (card.getColor().equals("Yellow")) {
+                    playerYellows.add(card.getNumber());
+                } else if (card.getColor().equals("Violet")) {
+                    playerViolets.add(card.getNumber());
                 }
             }
             ArrayList<Integer> maxPlayerList = playerReds;
@@ -278,14 +278,14 @@ public class Red7 extends Application {
             ArrayList<Integer> opponentYellows = new ArrayList<Integer>();
             ArrayList<Integer> opponentViolets = new ArrayList<Integer>();
             for (int i = 0; i < opponentPalette.size(); i++) {
-                String color = opponentPalette.get(i).getColor();
-                int number = opponentPalette.get(i).getNumber();
-                if (color.equals("Red")) {
-                    opponentReds.add(number);
-                } else if (color.equals("Yellow")) {
-                    opponentYellows.add(number);
-                } else if (color.equals("Violet")) {
-                    opponentViolets.add(number);
+                Card card = opponentPalette.get(i);
+
+                if (card.getColor().equals("Red")) {
+                    opponentReds.add(card.getNumber());
+                } else if (card.getColor().equals("Yellow")) {
+                    opponentYellows.add(card.getNumber());
+                } else if (card.getColor().equals("Violet")) {
+                    opponentViolets.add(card.getNumber());
                 }
             }
             ArrayList<Integer> maxOpponentList = opponentReds;
@@ -358,18 +358,17 @@ public class Red7 extends Application {
             String playerMaxColorBelow4 = "Nothing";
             int playerMaxNumberBelow4 = 0;
             for (int i = 0; i < playerPalette.size(); i++) {
-                String color = playerPalette.get(i).getColor();
-                int number = playerPalette.get(i).getNumber();
-                if (number < 4) {
-                    playerColorsBelow4.add(color);
-                    playerNumbersBelow4.add(number);
-                    if (number > playerMaxNumberBelow4) {
-                        playerMaxColorBelow4 = color;
-                        playerMaxNumberBelow4 = number;
-                    } else if (number == playerMaxNumberBelow4) {
-                        if (color.equals("Red") || (color.equals("Yellow") && playerMaxColorBelow4.equals("Violet"))) {
-                            playerMaxColorBelow4 = color;
-                            playerMaxNumberBelow4 = number;
+                Card card = playerPalette.get(i);
+                if (card.getNumber() < 4) {
+                    playerColorsBelow4.add(card.getColor());
+                    playerNumbersBelow4.add(card.getNumber());
+                    if (card.getNumber() > playerMaxNumberBelow4) {
+                        playerMaxColorBelow4 = card.getColor();
+                        playerMaxNumberBelow4 = card.getNumber();
+                    } else if (card.getNumber() == playerMaxNumberBelow4) {
+                        if (card.getColor().equals("Red") || (card.getColor().equals("Yellow") && playerMaxColorBelow4.equals("Violet"))) {
+                            playerMaxColorBelow4 = card.getColor();
+                            playerMaxNumberBelow4 = card.getNumber();
                         }
                     }
                 }
@@ -380,18 +379,17 @@ public class Red7 extends Application {
             String opponentMaxColorBelow4 = "Nothing";
             int opponentMaxNumberBelow4 = 0;
             for (int i = 0; i < opponentPalette.size(); i++) {
-                String color = opponentPalette.get(i).getColor();
-                int number = opponentPalette.get(i).getNumber();
-                if (number < 4) {
-                    opponentColorsBelow4.add(color);
-                    opponentNumbersBelow4.add(number);
-                    if (number > opponentMaxNumberBelow4) {
-                        opponentMaxColorBelow4 = color;
-                        opponentMaxNumberBelow4 = number;
-                    } else if (number == opponentMaxNumberBelow4) {
-                        if (color.equals("Red") || (color.equals("Yellow") && opponentMaxColorBelow4.equals("Violet"))) {
-                            opponentMaxColorBelow4 = color;
-                            opponentMaxNumberBelow4 = number;
+                Card card = opponentPalette.get(i);
+                if (card.getNumber() < 4) {
+                    opponentColorsBelow4.add(card.getColor());
+                    opponentNumbersBelow4.add(card.getNumber());
+                    if (card.getNumber() > opponentMaxNumberBelow4) {
+                        opponentMaxColorBelow4 = card.getColor();
+                        opponentMaxNumberBelow4 = card.getNumber();
+                    } else if (card.getNumber() == opponentMaxNumberBelow4) {
+                        if (card.getColor().equals("Red") || (card.getColor().equals("Yellow") && opponentMaxColorBelow4.equals("Violet"))) {
+                            opponentMaxColorBelow4 = card.getColor();
+                            opponentMaxNumberBelow4 = card.getNumber();
                         }
                     }
                 }
@@ -529,9 +527,8 @@ public class Red7 extends Application {
                 playChoices.clear();
                 choiceChosen.clear();
                 for (int i = 0; i < currPlayer.getHand().size(); i++) {
-                    String color = currPlayer.getHand().get(i).getColor();
-                    int number = currPlayer.getHand().get(i).getNumber();
-                    playChoices.add(i + ": Play " + color + " " + number + " to the palette.");
+                    Card card = currPlayer.getHand().get(i);
+                    playChoices.add(i + ": Play " + card.getColor() + " " + card.getNumber() + " to the palette.");
                 }
                 dialog = new ChoiceDialog<String>(playChoices.get(0), playChoices);
                 dialog.setTitle("Palette card");
