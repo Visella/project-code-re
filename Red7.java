@@ -1,5 +1,7 @@
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.List;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceDialog;
@@ -14,55 +16,86 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Red7 extends Application {
-    
+    private static final int CARDS_PER_COLOR = 7;
+    private static final int TOTAL_COLORS = 3;
+    private static final int TOTAL_CARDS = CARDS_PER_COLOR * TOTAL_COLORS;
+    private static final int INITIAL_HAND_SIZE = 4;
+
+    private boolean[] redsInDeck;
+    private boolean[] yellowsInDeck;
+    private boolean[] violetsInDeck;
     public static void main(String[] args) {
         launch(args);
     }
     
-    public static void dealCard(boolean[] redsInDeck, boolean[] yellowsInDeck, boolean[] violetsInDeck, ArrayList<String> targetColors, ArrayList<Integer> targetNumbers) {
-        
-        boolean workingCard = false;
-        
-        while (!workingCard) {
+    public void dealCard(boolean[] redsInDeck, boolean[] yellowsInDeck, boolean[] violetsInDeck, List<Card> targetList) {
+        Card newCard = generateRandomCard();
+        targetList.add(newCard);
+    }
     
+     private Card generateRandomCard() {
+        while (true) {
             Random randGen = new Random();
-            int cardIndex = randGen.nextInt(21);
-            int colorIndex = cardIndex / 7;
-            int numberIndex = cardIndex % 7;
+            int cardIndex = randGen.nextInt(TOTAL_CARDS);
+            CardLocation location = getCardLocation(cardIndex);
             
-            boolean[] cardArray = redsInDeck;
-            if (colorIndex == 1) {
-                cardArray = yellowsInDeck;
-            } else if (colorIndex == 2) {
-                cardArray = violetsInDeck;
-            }
-            
-            workingCard = cardArray[numberIndex];
-            if (workingCard) {
-                if (colorIndex == 0) {
-                    targetColors.add("Red");
-                } else if (colorIndex == 1) {
-                    targetColors.add("Yellow");
-                } else {
-                    targetColors.add("Violet");
-                }
-                targetNumbers.add(numberIndex + 1);
-                
-                cardArray[numberIndex] = false;
+            if (isCardAvailable(location)) {
+                markCardAsUsed(location);
+                return createCard(location);
             }
         }
     }
     
-    public static void displayAll(Stage stage, String canvasColor, ArrayList<String> playerAPaletteColors, ArrayList<Integer> playerAPaletteNumbers, ArrayList<String> playerBPaletteColors, ArrayList<Integer> playerBPaletteNumbers, ArrayList<String> playerAHandColors, ArrayList<Integer> playerAHandNumbers, ArrayList<String> playerBHandColors, ArrayList<Integer> playerBHandNumbers) {
+    private CardLocation getCardLocation(int cardIndex) {
+        int colorIndex = cardIndex / CARDS_PER_COLOR;
+        int numberIndex = cardIndex % CARDS_PER_COLOR;
+        return new CardLocation(colorIndex, numberIndex);
+    }
+    
+    private boolean isCardAvailable(CardLocation location) {
+        boolean[] deck = getDeckByColorIndex(location.colorIndex);
+        return deck[location.numberIndex];
+    }
+    
+    private void markCardAsUsed(CardLocation location) {
+        boolean[] deck = getDeckByColorIndex(location.colorIndex);
+        deck[location.numberIndex] = false;
+    }
+    
+    private Card createCard(CardLocation location) {
+        String color = getColorByIndex(location.colorIndex);
+        int number = location.numberIndex + 1;
+        return new Card(color, number);
+    }
+    
+    private boolean[] getDeckByColorIndex(int colorIndex) {
+        switch (colorIndex) {
+            case 0: return redsInDeck;
+            case 1: return yellowsInDeck;
+            case 2: return violetsInDeck;
+            default: throw new IllegalArgumentException("Invalid color index: " + colorIndex);
+        }
+    }
+    
+    private String getColorByIndex(int colorIndex) {
+        switch (colorIndex) {
+            case 0: return "Red";
+            case 1: return "Yellow";
+            case 2: return "Violet";
+            default: throw new IllegalArgumentException("Invalid color index: " + colorIndex);
+        }
+    }
+
+    public static void displayAll(Stage stage, String canvasColor, ArrayList<Card> playerAPalette, ArrayList<Card> playerBPalette, ArrayList<Card> playerAHand, ArrayList<Card> playerBHand ) {
         VBox board = new VBox();
         board.setSpacing(2);
 
         Text handText = new Text("Player A's Hand");
         board.getChildren().add(handText);
-        board.getChildren().add(getCardRow(playerAHandColors, playerAHandNumbers));
+        board.getChildren().add(getCardRow(playerAHand));
         
         board.getChildren().add(new Text("Player A's Palette:"));
-        board.getChildren().add(getCardRow(playerAPaletteColors, playerAPaletteNumbers));
+        board.getChildren().add(getCardRow(playerAPalette));
         
         board.getChildren().add(new Text("Canvas:"));
         Color color = getJavaFXColor(canvasColor);
@@ -71,20 +104,20 @@ public class Red7 extends Application {
         board.getChildren().add(canvasRectangle);
         
         board.getChildren().add(new Text("Player B's Palette:"));
-        board.getChildren().add(getCardRow(playerBPaletteColors, playerBPaletteNumbers));
+        board.getChildren().add(getCardRow(playerBPalette));
 
         board.getChildren().add(new Text("Player B's Hand"));
-        board.getChildren().add(getCardRow(playerBHandColors, playerBHandNumbers));
+        board.getChildren().add(getCardRow(playerBHand));
 
         stage.setScene(new Scene(board));
         stage.show();
         stage.sizeToScene();
     }
     
-    public static HBox getCardRow(ArrayList<String> colors, ArrayList<Integer> numbers) {
+    public static HBox getCardRow(ArrayList<Card> cards) {
         HBox cardsRow = new HBox();
-        for (int i = 0; i < colors.size(); i++) {
-            StackPane cardGraphics = getCardGraphics(colors.get(i), numbers.get(i));
+        for (int i = 0; i < cards.size(); i++) {
+            StackPane cardGraphics = getCardGraphics(cards.get(i).getColor(), cards.get(i).getNumber());
             cardsRow.getChildren().add(cardGraphics);
         }
         return cardsRow;
@@ -136,47 +169,49 @@ public class Red7 extends Application {
         return new Rectangle(175, 125, color);
     }
 
+    private static Card getMaxCardFromList(ArrayList<Card> cards) {
+        if (cards.isEmpty()) {
+            return new Card("Nothing", 0);
+        }
 
-    public static boolean playerWinning(String canvasColor, ArrayList<String> playerPaletteColors, ArrayList<Integer> playerPaletteNumbers, ArrayList<String> opponentPaletteColors, ArrayList<Integer> opponentPaletteNumbers) {
+        Card maxCard = cards.get(0);
+        for (Card card : cards) {
+            if (isCardHigher(card, maxCard)) {
+                maxCard = card;
+            }
+        }
+        return new Card(maxCard.getColor(), maxCard.getNumber());
+    }
+
+    private static boolean isCardHigher(Card card1, Card card2) {
+        if (card1.getNumber() > card2.getNumber()) {
+            return true;
+        }
+        if (card1.getNumber() == card2.getNumber()) {
+            return isColorHigherPriority(card1.getColor(), card2.getColor());
+        }
+        return false;
+    }
+    
+
+    private static boolean isColorHigherPriority(String c1, String c2) {
+        if (c1.equals("Red")) return true;
+        return c1.equals("Yellow") && c2.equals("Violet");
+    }
+
+
+    public static boolean playerWinning(String canvasColor, ArrayList<Card> playerPalette, ArrayList<Card> opponentPalette) {
         if (canvasColor.equals("Red")) {
-            Card maxPlayerCard = new Card("Nothing",0);
-            for (int i = 0; i < playerPaletteColors.size(); i++) {
-                String color = playerPaletteColors.get(i);
-                int number = playerPaletteNumbers.get(i);
-                if (number > maxPlayerCard.getNumber()) {
-                    maxPlayerCard.setColor(color);
-                    maxPlayerCard.setNumber(number);
-                } else if (number == maxPlayerCard.getNumber())
-     {
-                    if (color.equals("Red") || (color.equals("Yellow") && maxPlayerCard.getColor().equals("Violet"))) {
-                        maxPlayerCard.setColor(color);
-                        maxPlayerCard.setNumber(number);
-                    }
-                }
-            }
-            Card maxOpponentCard = new Card("Nothing",0);
-            int maxOpponentNumber = 0;
-            for (int i = 0; i < opponentPaletteColors.size(); i++) {
-                String color = opponentPaletteColors.get(i);
-                int number = opponentPaletteNumbers.get(i);
-                if (number > maxOpponentNumber) {
-                    maxOpponentCard.setColor(color);
-                    maxOpponentCard.setNumber(number);
-                } else if (number == maxOpponentNumber) {
-                    if (color.equals("Red") || (color.equals("Yellow") && maxPlayerCard.getColor().equals("Violet"))) {
-                        maxOpponentCard.setColor(color);
-                        maxOpponentCard.setNumber(number);
-                    }
-                }
-            }
+            Card maxPlayer = getMaxCardFromList(playerPalette);
+            Card maxOpponent = getMaxCardFromList(opponentPalette);
             
-            System.out.println("Player's max card: " + maxPlayerCard.getColor() + " " + maxPlayerCard.getNumber());
-            System.out.println("Opponent's max card: " + maxOpponentCard.getColor() + " " + maxOpponentNumber);
+            System.out.println("Player's max card: " + maxPlayer.getColor() + " " + maxPlayer.getNumber());
+            System.out.println("Opponent's max card: " + maxOpponent.getColor() + " " + maxOpponent.getNumber());
             
-            if (maxPlayerCard.getNumber() > maxOpponentNumber) {
+            if (maxPlayer.getNumber() > maxOpponent.getNumber()) {
                 return true;
-            } else if (maxPlayerCard.getNumber() == maxOpponentNumber) {
-                if (maxPlayerCard.getColor() .equals("Red") || (maxPlayerCard.getColor() .equals("Yellow") && maxOpponentCard.getColor().equals("Violet"))) {
+            } else if (maxPlayer.getNumber() == maxOpponent.getNumber()) {
+                if (maxPlayer.getColor() .equals("Red") || (maxPlayer.getColor() .equals("Yellow") && maxOpponent.getColor().equals("Violet"))) {
                     return true;
                 } else {
                     return false;
@@ -188,9 +223,9 @@ public class Red7 extends Application {
             ArrayList<Integer> playerReds = new ArrayList<Integer>();
             ArrayList<Integer> playerYellows = new ArrayList<Integer>();
             ArrayList<Integer> playerViolets = new ArrayList<Integer>();
-            for (int i = 0; i < playerPaletteColors.size(); i++) {
-                String color = playerPaletteColors.get(i);
-                int number = playerPaletteNumbers.get(i);
+            for (int i = 0; i < playerPalette.size(); i++) {
+                String color = playerPalette.get(i).getColor();
+                int number = playerPalette.get(i).getNumber();
                 if (color.equals("Red")) {
                     playerReds.add(number);
                 } else if (color.equals("Yellow")) {
@@ -242,9 +277,9 @@ public class Red7 extends Application {
             ArrayList<Integer> opponentReds = new ArrayList<Integer>();
             ArrayList<Integer> opponentYellows = new ArrayList<Integer>();
             ArrayList<Integer> opponentViolets = new ArrayList<Integer>();
-            for (int i = 0; i < opponentPaletteColors.size(); i++) {
-                String color = opponentPaletteColors.get(i);
-                int number = opponentPaletteNumbers.get(i);
+            for (int i = 0; i < opponentPalette.size(); i++) {
+                String color = opponentPalette.get(i).getColor();
+                int number = opponentPalette.get(i).getNumber();
                 if (color.equals("Red")) {
                     opponentReds.add(number);
                 } else if (color.equals("Yellow")) {
@@ -322,9 +357,9 @@ public class Red7 extends Application {
             ArrayList<Integer> playerNumbersBelow4 = new ArrayList<Integer>();
             String playerMaxColorBelow4 = "Nothing";
             int playerMaxNumberBelow4 = 0;
-            for (int i = 0; i < playerPaletteColors.size(); i++) {
-                String color = playerPaletteColors.get(i);
-                int number = playerPaletteNumbers.get(i);
+            for (int i = 0; i < playerPalette.size(); i++) {
+                String color = playerPalette.get(i).getColor();
+                int number = playerPalette.get(i).getNumber();
                 if (number < 4) {
                     playerColorsBelow4.add(color);
                     playerNumbersBelow4.add(number);
@@ -344,9 +379,9 @@ public class Red7 extends Application {
             ArrayList<Integer> opponentNumbersBelow4 = new ArrayList<Integer>();
             String opponentMaxColorBelow4 = "Nothing";
             int opponentMaxNumberBelow4 = 0;
-            for (int i = 0; i < opponentPaletteColors.size(); i++) {
-                String color = opponentPaletteColors.get(i);
-                int number = opponentPaletteNumbers.get(i);
+            for (int i = 0; i < opponentPalette.size(); i++) {
+                String color = opponentPalette.get(i).getColor();
+                int number = opponentPalette.get(i).getNumber();
                 if (number < 4) {
                     opponentColorsBelow4.add(color);
                     opponentNumbersBelow4.add(number);
@@ -395,28 +430,28 @@ public class Red7 extends Application {
     
         primaryStage.setTitle("Red 7");
         
-        boolean[] violetsInDeck = new boolean[] {true, true, true, true, true, true, true};
-        boolean[] yellowsInDeck = new boolean[] {true, true, true, true, true, true, true};
-        boolean[] redsInDeck = new boolean[] {true, true, true, true, true, true, true};
+        violetsInDeck = new boolean[] {true, true, true, true, true, true, true};
+        yellowsInDeck = new boolean[] {true, true, true, true, true, true, true};
+        redsInDeck = new boolean[] {true, true, true, true, true, true, true};
         
         String canvasColor = "Red";
         
         Player playerA = new Player();
         
-        dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerA.getPaletteColors(), playerA.getPaletteNumbers());
+        dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerA.getPalette());
         for (int i = 0; i < 4; i++) {
-            dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerA.getHandColors(), playerA.getHandNumbers());
+            dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerA.getHand());
         }
         
         Player playerB = new Player();
 
-        dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerB.getPaletteColors(), playerB.getPaletteNumbers());
+        dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerB.getPalette());
         for (int i = 0; i < 4; i++) {
-            dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerB.getHandColors(), playerB.getHandNumbers());
+            dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerB.getHand());
         }
 
         int currentPlayer;
-        if (playerWinning(canvasColor, playerA.getPaletteColors(), playerA.getPaletteNumbers(), playerB.getPaletteColors(), playerB.getPaletteNumbers())) {
+        if (playerWinning(canvasColor, playerA.getPalette(), playerB.getPalette())) {
             currentPlayer = 1;
         } else {
             currentPlayer = 0;
@@ -429,39 +464,31 @@ public class Red7 extends Application {
         
         while (true) {
         
-            displayAll(primaryStage, canvasColor, playerA.getPaletteColors(), playerA.getPaletteNumbers(), playerB.getPaletteColors(), playerB.getPaletteNumbers(), playerA.getHandColors(), playerA.getHandNumbers(), playerB.getHandColors(), playerB.getHandNumbers());
+            displayAll(primaryStage, canvasColor, playerA.getPalette(), playerB.getPalette(), playerA.getHand(), playerB.getHand());
             
             Player currPlayer = new Player();
             Player opponent = new Player();
 
             if (currentPlayer == 0) {
-                currPlayer.setHandColors(playerA.getHandColors());
-                currPlayer.setHandNumbers(playerA.getHandNumbers());
-                currPlayer.setPaletteColors(playerA.getPaletteColors());
-                currPlayer.setPaletteNumbers(playerA.getPaletteNumbers());
-                opponent.setHandColors(playerB.getHandColors());
-                opponent.setHandNumbers(playerB.getHandNumbers());
-                opponent.setPaletteColors(playerB.getPaletteColors());
-                opponent.setPaletteNumbers(playerB.getPaletteNumbers());
+                currPlayer.setHand(playerA.getHand());
+                currPlayer.setPalette(playerA.getPalette());
+                opponent.setHand(playerB.getHand());
+                opponent.setPalette(playerB.getPalette());
             } else {
-                currPlayer.setHandColors(playerB.getHandColors());
-                currPlayer.setHandNumbers(playerB.getHandNumbers());
-                currPlayer.setPaletteColors(playerB.getPaletteColors());
-                currPlayer.setPaletteNumbers(playerB.getPaletteNumbers());
-                opponent.setHandColors(playerA.getHandColors());
-                opponent.setHandNumbers(playerA.getHandNumbers());
-                opponent.setPaletteColors(playerA.getPaletteColors());
-                opponent.setPaletteNumbers(playerA.getPaletteNumbers());
+                currPlayer.setHand(playerB.getHand());
+                currPlayer.setPalette(playerB.getPalette());
+                opponent.setHand(playerA.getHand());
+                opponent.setPalette(playerA.getPalette());
             }
             
-            if (currPlayer.getHandColors().size() == 0) {
+            if (currPlayer.getHand().size() == 0) {
                 break;
             }
             
             ArrayList<String> playChoices = new ArrayList<String>();
             playChoices.add("Play only to Palette");
             playChoices.add("Play only to Canvas");
-            if (currPlayer.getHandColors().size() > 1) {
+            if (currPlayer.getHand().size() > 1) {
                 playChoices.add("Play to Palette and Canvas");
             }
             playChoices.add("Concede");
@@ -501,9 +528,9 @@ public class Red7 extends Application {
             if (playToPalette) {
                 playChoices.clear();
                 choiceChosen.clear();
-                for (int i = 0; i < currPlayer.getHandColors().size(); i++) {
-                    String color = currPlayer.getHandColors().get(i);
-                    int number = currPlayer.getHandNumbers().get(i);
+                for (int i = 0; i < currPlayer.getHand().size(); i++) {
+                    String color = currPlayer.getHand().get(i).getColor();
+                    int number = currPlayer.getHand().get(i).getNumber();
                     playChoices.add(i + ": Play " + color + " " + number + " to the palette.");
                 }
                 dialog = new ChoiceDialog<String>(playChoices.get(0), playChoices);
@@ -525,21 +552,16 @@ public class Red7 extends Application {
                 } catch (Exception e) {
                     System.err.print("This shouldn't happen!");
                 }
-                String color = currPlayer.getHandColors().get(cardIndex);
-                int number = currPlayer.getHandNumbers().get(cardIndex);
-                newPlayer.removeHandColors(cardIndex);
-                newPlayer.removeHandNumbers(cardIndex);
-                newPlayer.addPaletteColors(color);
-                newPlayer.addPaletteNumbers(number);
+                Card c = newPlayer.removeCardFromHand(cardIndex);
+                newPlayer.addCardToPalette(c);
             }
             
             if (playToCanvas) {
                 playChoices.clear();
                 choiceChosen.clear();
-                for (int i = 0; i < newPlayer.getHandColors().size(); i++) {
-                    String color = newPlayer.getHandColors().get(i);
-                    int number = newPlayer.getHandNumbers().get(i);
-                    playChoices.add(i + ": Play " + color + " " + number + " to the canvas.");
+                for (int i = 0; i < newPlayer.getHand().size(); i++) {
+                    Card c = newPlayer.getHand().get(i);
+                    playChoices.add(i + ": Play " + c.getColor() + " " + c.getNumber()+ " to the canvas.");
                 }
                 dialog = new ChoiceDialog<String>(playChoices.get(0), playChoices);
                 dialog.setTitle("Canvas card");
@@ -560,19 +582,13 @@ public class Red7 extends Application {
                 } catch (Exception e) {
                     System.err.print("This shouldn't happen!");
                 }
-                String color = newPlayer.getHandColors().get(cardIndex);
-                int number = newPlayer.getHandNumbers().get(cardIndex);
-                newPlayer.getHandColors().remove(cardIndex);
-                newPlayer.getHandNumbers().remove(cardIndex);
-                newCanvasColor = color;
+                Card c = newPlayer.removeCardFromHand(cardIndex);
+                newCanvasColor = c.getColor();
             }
                 
-            if (playerWinning(newCanvasColor, newPlayer.getPaletteColors(), newPlayer.getPaletteNumbers(), opponent.getPaletteColors(), opponent.getPaletteNumbers())) {
+            if (playerWinning(newCanvasColor, newPlayer.getPalette(), opponent.getPalette())) {
                 System.out.println("That move works!");
-                replaceContentsWithAnother(currPlayer.getHandColors(), newPlayer.getHandColors());
-                replaceContentsWithAnother(currPlayer.getHandNumbers(), newPlayer.getHandNumbers());
-                replaceContentsWithAnother(currPlayer.getPaletteColors(), newPlayer.getPaletteColors());
-                replaceContentsWithAnother(currPlayer.getPaletteNumbers(), newPlayer.getPaletteNumbers());
+                currPlayer.copyFrom(newPlayer);
                 canvasColor = newCanvasColor;
                 
                 currentPlayer = (currentPlayer + 1) % 2; //move to the next player
