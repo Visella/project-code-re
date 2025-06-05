@@ -138,18 +138,18 @@ public class Red7 extends Application {
     
     public static boolean playerWinning(String canvasColor, ArrayList<String> playerPaletteColors, ArrayList<Integer> playerPaletteNumbers, ArrayList<String> opponentPaletteColors, ArrayList<Integer> opponentPaletteNumbers) {
         if (canvasColor.equals("Red")) {
-            String maxPlayerColor = "Nothing";
-            int maxPlayerNumber = 0;
+            Card maxPlayerCard = new Card("Nothing",0);
             for (int i = 0; i < playerPaletteColors.size(); i++) {
                 String color = playerPaletteColors.get(i);
                 int number = playerPaletteNumbers.get(i);
-                if (number > maxPlayerNumber) {
-                    maxPlayerColor = color;
-                    maxPlayerNumber = number;
-                } else if (number == maxPlayerNumber) {
-                    if (color.equals("Red") || (color.equals("Yellow") && maxPlayerColor.equals("Violet"))) {
-                        maxPlayerColor = color;
-                        maxPlayerNumber = number;
+                if (number > maxPlayerCard.getNumber()) {
+                    maxPlayerCard.setColor(color);
+                    maxPlayerCard.setNumber(number);
+                } else if (number == maxPlayerCard.getNumber())
+     {
+                    if (color.equals("Red") || (color.equals("Yellow") && maxPlayerCard.getColor().equals("Violet"))) {
+                        maxPlayerCard.setColor(color);
+                        maxPlayerCard.setNumber(number);
                     }
                 }
             }
@@ -162,20 +162,20 @@ public class Red7 extends Application {
                     maxOpponentColor = color;
                     maxOpponentNumber = number;
                 } else if (number == maxOpponentNumber) {
-                    if (color.equals("Red") || (color.equals("Yellow") && maxPlayerColor.equals("Violet"))) {
+                    if (color.equals("Red") || (color.equals("Yellow") && maxPlayerCard.getColor().equals("Violet"))) {
                         maxOpponentColor = color;
                         maxOpponentNumber = number;
                     }
                 }
             }
             
-            System.out.println("Player's max card: " + maxPlayerColor + " " + maxPlayerNumber);
+            System.out.println("Player's max card: " + maxPlayerCard.getColor() + " " + maxPlayerCard.getNumber());
             System.out.println("Opponent's max card: " + maxOpponentColor + " " + maxOpponentNumber);
             
-            if (maxPlayerNumber > maxOpponentNumber) {
+            if (maxPlayerCard.getNumber() > maxOpponentNumber) {
                 return true;
-            } else if (maxPlayerNumber == maxOpponentNumber) {
-                if (maxPlayerColor.equals("Red") || (maxPlayerColor.equals("Yellow") && maxOpponentColor.equals("Violet"))) {
+            } else if (maxPlayerCard.getNumber() == maxOpponentNumber) {
+                if (maxPlayerCard.getColor() .equals("Red") || (maxPlayerCard.getColor() .equals("Yellow") && maxOpponentColor.equals("Violet"))) {
                     return true;
                 } else {
                     return false;
@@ -583,6 +583,6 @@ public class Red7 extends Application {
             
             
         }
-        System.out.println("Player " + player + " loses!");  
-    }
+        System.out.println("Player " + player + " loses!");  
+    }
 }
