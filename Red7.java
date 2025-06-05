@@ -65,14 +65,9 @@ public class Red7 extends Application {
         board.getChildren().add(getCardRow(playerAPaletteColors, playerAPaletteNumbers));
         
         board.getChildren().add(new Text("Canvas:"));
-        Rectangle canvasRectangle;
-        if (canvasColor.equals("Red")) {
-            canvasRectangle = new Rectangle(175, 125, Color.RED);
-        } else if (canvasColor.equals("Yellow")) {
-            canvasRectangle = new Rectangle(175, 125, Color.YELLOW);
-        } else {
-            canvasRectangle = new Rectangle(175, 125, Color.VIOLET);
-        }
+        Color color = getJavaFXColor(canvasColor);
+        Rectangle canvasRectangle =  new Rectangle(175, 125, color);
+        
         board.getChildren().add(canvasRectangle);
         
         board.getChildren().add(new Text("Player B's Palette:"));
@@ -95,27 +90,50 @@ public class Red7 extends Application {
         return cardsRow;
     }
     
+    
     public static StackPane getCardGraphics(String color, int number) {
         StackPane cardPane = new StackPane();
         
-        Rectangle cardBase = new Rectangle(125, 175, Color.VIOLET);
-        if (color.equals("Red")) {
-            cardBase = new Rectangle(125, 175, Color.RED);
-        } else if (color.equals("Yellow")) {
-            cardBase = new Rectangle(125, 175, Color.YELLOW);
-        }
+        Rectangle cardBase = createCardBackground(color);
+        Text cardNumberText = createCardText(color, number);
+        
         cardPane.getChildren().add(cardBase);
-
-        Text cardNumberText = new Text("" + number);
-        cardNumberText.setFont(Font.font("System", FontWeight.BOLD, 50.0));
-        if (color.equals("Yellow")) {
-            cardNumberText.setFill(Color.BLACK);
-        } else {
-            cardNumberText.setFill(Color.WHITE);
-        }
         cardPane.getChildren().add(cardNumberText);
         
         return cardPane;
+    }
+    
+    private static Color getJavaFXColor(String colorName) {
+        switch (colorName.toLowerCase()) {
+            case "red": return Color.RED;
+            case "yellow": return Color.YELLOW;
+            case "violet": return Color.VIOLET;
+            default: return Color.VIOLET;
+        }
+    }
+    
+    public static Rectangle createCardBackground(String color) {
+        Color bgColor = getJavaFXColor(color);
+        return new Rectangle(125, 175, bgColor);
+    }
+    
+    public static Text createCardText(String color, int number) {
+        Text cardNumberText = new Text("" + number);
+        cardNumberText.setFont(Font.font("System", FontWeight.BOLD, 50.0));
+        
+        Color textColor = getTextColor(color);
+        cardNumberText.setFill(textColor);
+        
+        return cardNumberText;
+    }
+    
+    public static Color getTextColor(String cardColor) {
+        return cardColor.equals("Yellow") ? Color.BLACK : Color.WHITE;
+    }
+    
+    public static Rectangle createCanvasRectangle(String canvasColor) {
+        Color color = getJavaFXColor(canvasColor);
+        return new Rectangle(175, 125, color);
     }
     
     public static boolean playerWinning(String canvasColor, ArrayList<String> playerPaletteColors, ArrayList<Integer> playerPaletteNumbers, ArrayList<String> opponentPaletteColors, ArrayList<Integer> opponentPaletteNumbers) {
@@ -565,6 +583,6 @@ public class Red7 extends Application {
             
             
         }
-        System.out.println("Player " + player + " loses!");  
-    }
-} 
+        System.out.println("Player " + player + " loses!");  
+    }
+}
