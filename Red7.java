@@ -135,7 +135,8 @@ public class Red7 extends Application {
         Color color = getJavaFXColor(canvasColor);
         return new Rectangle(175, 125, color);
     }
-    
+
+
     public static boolean playerWinning(String canvasColor, ArrayList<String> playerPaletteColors, ArrayList<Integer> playerPaletteNumbers, ArrayList<String> opponentPaletteColors, ArrayList<Integer> opponentPaletteNumbers) {
         if (canvasColor.equals("Red")) {
             Card maxPlayerCard = new Card("Nothing",0);
@@ -153,29 +154,29 @@ public class Red7 extends Application {
                     }
                 }
             }
-            String maxOpponentColor = "Nothing";
+            Card maxOpponentCard = new Card("Nothing",0);
             int maxOpponentNumber = 0;
             for (int i = 0; i < opponentPaletteColors.size(); i++) {
                 String color = opponentPaletteColors.get(i);
                 int number = opponentPaletteNumbers.get(i);
                 if (number > maxOpponentNumber) {
-                    maxOpponentColor = color;
-                    maxOpponentNumber = number;
+                    maxOpponentCard.setColor(color);
+                    maxOpponentCard.setNumber(number);
                 } else if (number == maxOpponentNumber) {
                     if (color.equals("Red") || (color.equals("Yellow") && maxPlayerCard.getColor().equals("Violet"))) {
-                        maxOpponentColor = color;
-                        maxOpponentNumber = number;
+                        maxOpponentCard.setColor(color);
+                        maxOpponentCard.setNumber(number);
                     }
                 }
             }
             
             System.out.println("Player's max card: " + maxPlayerCard.getColor() + " " + maxPlayerCard.getNumber());
-            System.out.println("Opponent's max card: " + maxOpponentColor + " " + maxOpponentNumber);
+            System.out.println("Opponent's max card: " + maxOpponentCard.getColor() + " " + maxOpponentNumber);
             
             if (maxPlayerCard.getNumber() > maxOpponentNumber) {
                 return true;
             } else if (maxPlayerCard.getNumber() == maxOpponentNumber) {
-                if (maxPlayerCard.getColor() .equals("Red") || (maxPlayerCard.getColor() .equals("Yellow") && maxOpponentColor.equals("Violet"))) {
+                if (maxPlayerCard.getColor() .equals("Red") || (maxPlayerCard.getColor() .equals("Yellow") && maxOpponentCard.getColor().equals("Violet"))) {
                     return true;
                 } else {
                     return false;
