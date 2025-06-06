@@ -87,29 +87,41 @@ public class Red7 extends Application {
         }
     }
 
-    public static void displayAll(Stage stage, String canvasColor, ArrayList<Card> playerAPalette, ArrayList<Card> playerBPalette, ArrayList<Card> playerAHand, ArrayList<Card> playerBHand ) {
+    public static void displayAll(Stage stage, GameState gameState) {
+        VBox board = createGameBoard(gameState);
+        showStage(stage, board);
+    }
+    
+    private static VBox createGameBoard(GameState gameState) {
         VBox board = new VBox();
         board.setSpacing(2);
-
-        Text handText = new Text("Player A's Hand");
-        board.getChildren().add(handText);
-        board.getChildren().add(getCardRow(playerAHand));
         
-        board.getChildren().add(new Text("Player A's Palette:"));
-        board.getChildren().add(getCardRow(playerAPalette));
+        addPlayerSection(board, "Player A's Hand", gameState.getPlayerA().getHand());
+        addPlayerSection(board, "Player A's Palette:", gameState.getPlayerA().getPalette());
+        addCanvasSection(board, gameState.getCanvasColor());
+        addPlayerSection(board, "Player B's Palette:", gameState.getPlayerB().getPalette());
+        addPlayerSection(board, "Player B's Hand", gameState.getPlayerB().getHand());
         
+        return board;
+    }
+    
+    private static void addPlayerSection(VBox board, String title, List<Card> cards) {
+        board.getChildren().add(new Text(title));
+        board.getChildren().add(getCardRow(cards));
+    }
+    
+    private static void addCanvasSection(VBox board, String canvasColor) {
         board.getChildren().add(new Text("Canvas:"));
-        Color color = getJavaFXColor(canvasColor);
-        Rectangle canvasRectangle =  new Rectangle(175, 125, color);
-        
+        Rectangle canvasRectangle = createCanvasRectangle(canvasColor);
         board.getChildren().add(canvasRectangle);
-        
-        board.getChildren().add(new Text("Player B's Palette:"));
-        board.getChildren().add(getCardRow(playerBPalette));
+    }
+    
+    private static Rectangle createCanvasRectangle(String canvasColor) {
+        Color color = getJavaFXColor(canvasColor);
+        return new Rectangle(175, 125, color);
+    }
 
-        board.getChildren().add(new Text("Player B's Hand"));
-        board.getChildren().add(getCardRow(playerBHand));
-
+    private static void showStage(Stage stage, VBox board) {
         stage.setScene(new Scene(board));
         stage.show();
         stage.sizeToScene();
@@ -428,41 +440,14 @@ public class Red7 extends Application {
     
         primaryStage.setTitle("Red 7");
         
-        violetsInDeck = new boolean[] {true, true, true, true, true, true, true};
-        yellowsInDeck = new boolean[] {true, true, true, true, true, true, true};
-        redsInDeck = new boolean[] {true, true, true, true, true, true, true};
+    GameState gameState = new GameState();
+    System.out.println("Player " + gameState.getCurrentPlayerName() + " goes first!");
         
-        String canvasColor = "Red";
         
-        Player playerA = new Player();
-        
-        dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerA.getPalette());
-        for (int i = 0; i < 4; i++) {
-            dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerA.getHand());
-        }
-        
-        Player playerB = new Player();
 
-        dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerB.getPalette());
-        for (int i = 0; i < 4; i++) {
-            dealCard(redsInDeck, yellowsInDeck, violetsInDeck, playerB.getHand());
-        }
-
-        int currentPlayer;
-        if (playerWinning(canvasColor, playerA.getPalette(), playerB.getPalette())) {
-            currentPlayer = 1;
-        } else {
-            currentPlayer = 0;
-        }
-        
-        String[] players = new String[] {"A", "B"};
-        String player = players[currentPlayer];
-        
-        System.out.println("Player " + player + " goes first!");
-        
         while (true) {
-        
-            displayAll(primaryStage, canvasColor, playerA.getPalette(), playerB.getPalette(), playerA.getHand(), playerB.getHand());
+            
+            displayAll(primaryStage, gameState);
             
             Player currPlayer = new Player();
             Player opponent = new Player();
@@ -523,80 +508,69 @@ public class Red7 extends Application {
                 break;
             }
             
-            if (playToPalette) {
-                playChoices.clear();
-                choiceChosen.clear();
-                for (int i = 0; i < currPlayer.getHand().size(); i++) {
-                    Card card = currPlayer.getHand().get(i);
-                    playChoices.add(i + ": Play " + card.getColor() + " " + card.getNumber() + " to the palette.");
-                }
-                dialog = new ChoiceDialog<String>(playChoices.get(0), playChoices);
-                dialog.setTitle("Palette card");
-                dialog.setHeaderText("Player " + player + ", pick your card");
-                dialog.setContentText("Options:");
-                while (true) {
-                    dialog.showAndWait().ifPresent( (response) -> {
-                        choiceChosen.add(response);
-                    });
-                    if (choiceChosen.size() == 1) {
-                        break;
-                    }
-                }
-                choice = choiceChosen.get(0);
-                int cardIndex = 0; 
-                try {
-                    cardIndex = Integer.parseInt(choice.substring(0, 1));
-                } catch (Exception e) {
-                    System.err.print("This shouldn't happen!");
-                }
-                Card c = newPlayer.removeCardFromHand(cardIndex);
-                newPlayer.addCardToPalette(c);
+            if (playToPalette) { 
+                int paletteCardIndex = promptCardChoice(playerName, newPlayer.getHand(), "Palette");
+                moveCardToPalette(newPlayer, paletteCardIndex);
             }
             
             if (playToCanvas) {
-                playChoices.clear();
-                choiceChosen.clear();
-                for (int i = 0; i < newPlayer.getHand().size(); i++) {
-                    Card c = newPlayer.getHand().get(i);
-                    playChoices.add(i + ": Play " + c.getColor() + " " + c.getNumber()+ " to the canvas.");
-                }
-                dialog = new ChoiceDialog<String>(playChoices.get(0), playChoices);
-                dialog.setTitle("Canvas card");
-                dialog.setHeaderText("Player " + player + ", pick your card");
-                dialog.setContentText("Options:");
-                while (true) {
-                    dialog.showAndWait().ifPresent( (response) -> {
-                        choiceChosen.add(response);
-                    });
-                    if (choiceChosen.size() == 1) {
-                        break;
-                    }
-                }
-                choice = choiceChosen.get(0);
-                int cardIndex = 0; 
-                try {
-                    cardIndex = Integer.parseInt(choice.substring(0, 1));
-                } catch (Exception e) {
-                    System.err.print("This shouldn't happen!");
-                }
-                Card c = newPlayer.removeCardFromHand(cardIndex);
-                newCanvasColor = c.getColor();
-            }
+	        int canvasCardIndex = promptCardChoice(playerName, newPlayer.getHand(), "Canvas");
+	        newCanvasColor = moveCardToCanvas(newPlayer, canvasCardIndex);
+	        }
                 
             if (playerWinning(newCanvasColor, newPlayer.getPalette(), opponent.getPalette())) {
                 System.out.println("That move works!");
                 currPlayer.copyFrom(newPlayer);
-                canvasColor = newCanvasColor;
-                
-                currentPlayer = (currentPlayer + 1) % 2; //move to the next player
-                player = players[currentPlayer];
+                gameState.setCanvasColor(newCanvasColor);
+	            gameState.switchPlayer();
             } else {
                 System.out.println("That move doesn't work!");
             }
             
-            
-            
         }
         System.out.println("Player " + player + " loses!");  
+    }
+
+    public int promptCardChoice(String playerName, ArrayList<Card> cards, String action) {
+        ArrayList<String> choices = createCardChoices(cards, action);
+        String result = showChoiceDialog(
+            action + " card",
+            "Player " + playerName + ", pick your card",
+            "Options:",
+            choices
+        );
+        return Integer.parseInt(result.split(":")[0]);
+    }
+    
+    private ArrayList<String> createCardChoices(ArrayList<Card> cards, String action) {
+        ArrayList<String> choices = new ArrayList<>();
+        for (int i = 0; i < cards.size(); i++) {
+            Card c = cards.get(i);
+            choices.add(i + ": Play " + c.getColor() + " " + c.getNumber() + " to the " + action.toLowerCase() + ".");
+        }
+        return choices;
+    }
+    
+    private String showChoiceDialog(String title, String header, String content, ArrayList<String> choices) {
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
+        dialog.setTitle(title);
+        dialog.setHeaderText(header);
+        dialog.setContentText(content);
+
+        ArrayList<String> choiceChosen = new ArrayList<>();
+        while (choiceChosen.isEmpty()) {
+            dialog.showAndWait().ifPresent(choiceChosen::add);
+        }
+        return choiceChosen.get(0);
+    }
+
+    private void moveCardToPalette(Player player, int index) {
+        Card card = player.removeCardFromHand(index);
+        player.addCardToPalette(card);
+    }
+
+    private String moveCardToCanvas(Player player, int index) {
+        Card card = player.removeCardFromHand(index);
+        return card.getColor();
     }
 }
