@@ -1,4 +1,3 @@
-import java.util.Random;
 import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -14,84 +13,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Red7 extends Application {
-    private static final int CARDS_PER_COLOR = 7;
-    private static final int TOTAL_COLORS = 3;
-    private static final int TOTAL_CARDS = CARDS_PER_COLOR * TOTAL_COLORS;
-    private static final int INITIAL_HAND_SIZE = 4;
-
-    private boolean[] redsInDeck;
-    private boolean[] yellowsInDeck;
-    private boolean[] violetsInDeck;
-
     public static void main(String[] args) {
         launch(args);
-    }
-
-    public void dealCard(boolean[] redsInDeck, boolean[] yellowsInDeck, boolean[] violetsInDeck,
-            ArrayList<Card> targetList) {
-        Card newCard = generateRandomCard();
-        targetList.add(newCard);
-    }
-
-    private Card generateRandomCard() {
-        while (true) {
-            Random randGen = new Random();
-            int cardIndex = randGen.nextInt(TOTAL_CARDS);
-            CardLocation location = getCardLocation(cardIndex);
-
-            if (isCardAvailable(location)) {
-                markCardAsUsed(location);
-                return createCard(location);
-            }
-        }
-    }
-
-    private CardLocation getCardLocation(int cardIndex) {
-        int colorIndex = cardIndex / CARDS_PER_COLOR;
-        int numberIndex = cardIndex % CARDS_PER_COLOR;
-        return new CardLocation(colorIndex, numberIndex);
-    }
-
-    private boolean isCardAvailable(CardLocation location) {
-        boolean[] deck = getDeckByColorIndex(location.colorIndex);
-        return deck[location.numberIndex];
-    }
-
-    private void markCardAsUsed(CardLocation location) {
-        boolean[] deck = getDeckByColorIndex(location.colorIndex);
-        deck[location.numberIndex] = false;
-    }
-
-    private Card createCard(CardLocation location) {
-        String color = getColorByIndex(location.colorIndex);
-        int number = location.numberIndex + 1;
-        return new Card(color, number);
-    }
-
-    private boolean[] getDeckByColorIndex(int colorIndex) {
-        switch (colorIndex) {
-            case 0:
-                return redsInDeck;
-            case 1:
-                return yellowsInDeck;
-            case 2:
-                return violetsInDeck;
-            default:
-                throw new IllegalArgumentException("Invalid color index: " + colorIndex);
-        }
-    }
-
-    private String getColorByIndex(int colorIndex) {
-        switch (colorIndex) {
-            case 0:
-                return "Red";
-            case 1:
-                return "Yellow";
-            case 2:
-                return "Violet";
-            default:
-                throw new IllegalArgumentException("Invalid color index: " + colorIndex);
-        }
     }
 
     public static void displayAll(Stage stage, GameState gameState) {
@@ -429,21 +352,6 @@ public class Red7 extends Application {
             } else {
                 return false;
             }
-        }
-    }
-
-    public static <T> ArrayList<T> cloneAL(ArrayList<T> toClone) {
-        ArrayList<T> clone = new ArrayList<T>();
-        for (T item : toClone) {
-            clone.add(item);
-        }
-        return clone;
-    }
-
-    public static <T> void replaceContentsWithAnother(ArrayList<T> toReplace, ArrayList<T> newContents) {
-        toReplace.clear();
-        for (T item : newContents) {
-            toReplace.add(item);
         }
     }
 
