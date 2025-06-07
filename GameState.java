@@ -44,7 +44,7 @@ public class GameState {
     }
     
     private void setInitialPlayer() {
-	    this.currentPlayerIndex = GameLogic.playerWinning(canvasColor, playerA.getPalette(), playerB.getPalette()) ? 1 : 0;
+	    this.currentPlayerIndex = Red7.playerWinning(canvasColor, playerA.getPalette(), playerB.getPalette()) ? 1 : 0;
     }
     
     private void initializePlayers() {

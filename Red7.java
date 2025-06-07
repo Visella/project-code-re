@@ -1,7 +1,5 @@
 import java.util.Random;
 import java.util.ArrayList;
-import java.util.List;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceDialog;
@@ -24,66 +22,75 @@ public class Red7 extends Application {
     private boolean[] redsInDeck;
     private boolean[] yellowsInDeck;
     private boolean[] violetsInDeck;
-    
+
     public static void main(String[] args) {
         launch(args);
     }
-    
-    public void dealCard(boolean[] redsInDeck, boolean[] yellowsInDeck, boolean[] violetsInDeck, List<Card> targetList) {
+
+    public void dealCard(boolean[] redsInDeck, boolean[] yellowsInDeck, boolean[] violetsInDeck,
+            ArrayList<Card> targetList) {
         Card newCard = generateRandomCard();
         targetList.add(newCard);
     }
-    
-     private Card generateRandomCard() {
+
+    private Card generateRandomCard() {
         while (true) {
             Random randGen = new Random();
             int cardIndex = randGen.nextInt(TOTAL_CARDS);
             CardLocation location = getCardLocation(cardIndex);
-            
+
             if (isCardAvailable(location)) {
                 markCardAsUsed(location);
                 return createCard(location);
             }
         }
     }
-    
+
     private CardLocation getCardLocation(int cardIndex) {
         int colorIndex = cardIndex / CARDS_PER_COLOR;
         int numberIndex = cardIndex % CARDS_PER_COLOR;
         return new CardLocation(colorIndex, numberIndex);
     }
-    
+
     private boolean isCardAvailable(CardLocation location) {
         boolean[] deck = getDeckByColorIndex(location.colorIndex);
         return deck[location.numberIndex];
     }
-    
+
     private void markCardAsUsed(CardLocation location) {
         boolean[] deck = getDeckByColorIndex(location.colorIndex);
         deck[location.numberIndex] = false;
     }
-    
+
     private Card createCard(CardLocation location) {
         String color = getColorByIndex(location.colorIndex);
         int number = location.numberIndex + 1;
         return new Card(color, number);
     }
-    
+
     private boolean[] getDeckByColorIndex(int colorIndex) {
         switch (colorIndex) {
-            case 0: return redsInDeck;
-            case 1: return yellowsInDeck;
-            case 2: return violetsInDeck;
-            default: throw new IllegalArgumentException("Invalid color index: " + colorIndex);
+            case 0:
+                return redsInDeck;
+            case 1:
+                return yellowsInDeck;
+            case 2:
+                return violetsInDeck;
+            default:
+                throw new IllegalArgumentException("Invalid color index: " + colorIndex);
         }
     }
-    
+
     private String getColorByIndex(int colorIndex) {
         switch (colorIndex) {
-            case 0: return "Red";
-            case 1: return "Yellow";
-            case 2: return "Violet";
-            default: throw new IllegalArgumentException("Invalid color index: " + colorIndex);
+            case 0:
+                return "Red";
+            case 1:
+                return "Yellow";
+            case 2:
+                return "Violet";
+            default:
+                throw new IllegalArgumentException("Invalid color index: " + colorIndex);
         }
     }
 
@@ -91,34 +98,29 @@ public class Red7 extends Application {
         VBox board = createGameBoard(gameState);
         showStage(stage, board);
     }
-    
+
     private static VBox createGameBoard(GameState gameState) {
         VBox board = new VBox();
         board.setSpacing(2);
-        
+
         addPlayerSection(board, "Player A's Hand", gameState.getPlayerA().getHand());
         addPlayerSection(board, "Player A's Palette:", gameState.getPlayerA().getPalette());
         addCanvasSection(board, gameState.getCanvasColor());
         addPlayerSection(board, "Player B's Palette:", gameState.getPlayerB().getPalette());
         addPlayerSection(board, "Player B's Hand", gameState.getPlayerB().getHand());
-        
+
         return board;
     }
-    
-    private static void addPlayerSection(VBox board, String title, List<Card> cards) {
+
+    private static void addPlayerSection(VBox board, String title, ArrayList<Card> cards) {
         board.getChildren().add(new Text(title));
         board.getChildren().add(getCardRow(cards));
     }
-    
+
     private static void addCanvasSection(VBox board, String canvasColor) {
         board.getChildren().add(new Text("Canvas:"));
         Rectangle canvasRectangle = createCanvasRectangle(canvasColor);
         board.getChildren().add(canvasRectangle);
-    }
-    
-    private static Rectangle createCanvasRectangle(String canvasColor) {
-        Color color = getJavaFXColor(canvasColor);
-        return new Rectangle(175, 125, color);
     }
 
     private static void showStage(Stage stage, VBox board) {
@@ -126,7 +128,7 @@ public class Red7 extends Application {
         stage.show();
         stage.sizeToScene();
     }
-    
+
     public static HBox getCardRow(ArrayList<Card> cards) {
         HBox cardsRow = new HBox();
         for (int i = 0; i < cards.size(); i++) {
@@ -135,48 +137,51 @@ public class Red7 extends Application {
         }
         return cardsRow;
     }
-    
-    
+
     public static StackPane getCardGraphics(String color, int number) {
         StackPane cardPane = new StackPane();
-        
+
         Rectangle cardBase = createCardBackground(color);
         Text cardNumberText = createCardText(color, number);
-        
+
         cardPane.getChildren().add(cardBase);
         cardPane.getChildren().add(cardNumberText);
-        
+
         return cardPane;
     }
-    
+
     private static Color getJavaFXColor(String colorName) {
         switch (colorName.toLowerCase()) {
-            case "red": return Color.RED;
-            case "yellow": return Color.YELLOW;
-            case "violet": return Color.VIOLET;
-            default: return Color.VIOLET;
+            case "red":
+                return Color.RED;
+            case "yellow":
+                return Color.YELLOW;
+            case "violet":
+                return Color.VIOLET;
+            default:
+                return Color.VIOLET;
         }
     }
-    
+
     public static Rectangle createCardBackground(String color) {
         Color bgColor = getJavaFXColor(color);
         return new Rectangle(125, 175, bgColor);
     }
-    
+
     public static Text createCardText(String color, int number) {
         Text cardNumberText = new Text("" + number);
         cardNumberText.setFont(Font.font("System", FontWeight.BOLD, 50.0));
-        
+
         Color textColor = getTextColor(color);
         cardNumberText.setFill(textColor);
-        
+
         return cardNumberText;
     }
-    
+
     public static Color getTextColor(String cardColor) {
         return cardColor.equals("Yellow") ? Color.BLACK : Color.WHITE;
     }
-    
+
     public static Rectangle createCanvasRectangle(String canvasColor) {
         Color color = getJavaFXColor(canvasColor);
         return new Rectangle(175, 125, color);
@@ -205,26 +210,27 @@ public class Red7 extends Application {
         }
         return false;
     }
-    
 
     private static boolean isColorHigherPriority(String c1, String c2) {
-        if (c1.equals("Red")) return true;
+        if (c1.equals("Red"))
+            return true;
         return c1.equals("Yellow") && c2.equals("Violet");
     }
 
-
-    public static boolean playerWinning(String canvasColor, ArrayList<Card> playerPalette, ArrayList<Card> opponentPalette) {
+    public static boolean playerWinning(String canvasColor, ArrayList<Card> playerPalette,
+            ArrayList<Card> opponentPalette) {
         if (canvasColor.equals("Red")) {
             Card maxPlayer = getMaxCardFromList(playerPalette);
             Card maxOpponent = getMaxCardFromList(opponentPalette);
-            
+
             System.out.println("Player's max card: " + maxPlayer.getColor() + " " + maxPlayer.getNumber());
             System.out.println("Opponent's max card: " + maxOpponent.getColor() + " " + maxOpponent.getNumber());
-            
+
             if (maxPlayer.getNumber() > maxOpponent.getNumber()) {
                 return true;
             } else if (maxPlayer.getNumber() == maxOpponent.getNumber()) {
-                if (maxPlayer.getColor() .equals("Red") || (maxPlayer.getColor() .equals("Yellow") && maxOpponent.getColor().equals("Violet"))) {
+                if (maxPlayer.getColor().equals("Red")
+                        || (maxPlayer.getColor().equals("Yellow") && maxOpponent.getColor().equals("Violet"))) {
                     return true;
                 } else {
                     return false;
@@ -285,7 +291,7 @@ public class Red7 extends Application {
                     playerMaxColor = "Violet";
                 }
             }
-            
+
             ArrayList<Integer> opponentReds = new ArrayList<Integer>();
             ArrayList<Integer> opponentYellows = new ArrayList<Integer>();
             ArrayList<Integer> opponentViolets = new ArrayList<Integer>();
@@ -349,11 +355,12 @@ public class Red7 extends Application {
                 for (int i = 0; i < maxOpponentList.size(); i++) {
                     opponentMaxNumber = Math.max(opponentMaxNumber, maxOpponentList.get(i));
                 }
-                
+
                 if (playerMaxNumber > opponentMaxNumber) {
                     return true;
                 } else if (playerMaxNumber == opponentMaxNumber) {
-                    if (playerMaxColor.equals("Red") || (playerMaxColor.equals("Yellow") && opponentMaxColor.equals("Violet"))) {
+                    if (playerMaxColor.equals("Red")
+                            || (playerMaxColor.equals("Yellow") && opponentMaxColor.equals("Violet"))) {
                         return true;
                     } else {
                         return false;
@@ -378,14 +385,15 @@ public class Red7 extends Application {
                         playerMaxColorBelow4 = card.getColor();
                         playerMaxNumberBelow4 = card.getNumber();
                     } else if (card.getNumber() == playerMaxNumberBelow4) {
-                        if (card.getColor().equals("Red") || (card.getColor().equals("Yellow") && playerMaxColorBelow4.equals("Violet"))) {
+                        if (card.getColor().equals("Red")
+                                || (card.getColor().equals("Yellow") && playerMaxColorBelow4.equals("Violet"))) {
                             playerMaxColorBelow4 = card.getColor();
                             playerMaxNumberBelow4 = card.getNumber();
                         }
                     }
                 }
             }
-            
+
             ArrayList<String> opponentColorsBelow4 = new ArrayList<String>();
             ArrayList<Integer> opponentNumbersBelow4 = new ArrayList<Integer>();
             String opponentMaxColorBelow4 = "Nothing";
@@ -399,7 +407,8 @@ public class Red7 extends Application {
                         opponentMaxColorBelow4 = card.getColor();
                         opponentMaxNumberBelow4 = card.getNumber();
                     } else if (card.getNumber() == opponentMaxNumberBelow4) {
-                        if (card.getColor().equals("Red") || (card.getColor().equals("Yellow") && opponentMaxColorBelow4.equals("Violet"))) {
+                        if (card.getColor().equals("Red")
+                                || (card.getColor().equals("Yellow") && opponentMaxColorBelow4.equals("Violet"))) {
                             opponentMaxColorBelow4 = card.getColor();
                             opponentMaxNumberBelow4 = card.getNumber();
                         }
@@ -412,17 +421,18 @@ public class Red7 extends Application {
                 if (playerMaxNumberBelow4 > opponentMaxNumberBelow4) {
                     return true;
                 } else if (playerMaxNumberBelow4 == opponentMaxNumberBelow4) {
-                    return (playerMaxColorBelow4.equals("Red") || (playerMaxColorBelow4.equals("Yellow") && opponentMaxColorBelow4.equals("Violet")));
+                    return (playerMaxColorBelow4.equals("Red")
+                            || (playerMaxColorBelow4.equals("Yellow") && opponentMaxColorBelow4.equals("Violet")));
                 } else {
                     return false;
                 }
             } else {
                 return false;
             }
-        }  
+        }
     }
 
-    public static <T> ArrayList<T>  cloneAL(ArrayList<T> toClone) {
+    public static <T> ArrayList<T> cloneAL(ArrayList<T> toClone) {
         ArrayList<T> clone = new ArrayList<T>();
         for (T item : toClone) {
             clone.add(item);
@@ -436,38 +446,26 @@ public class Red7 extends Application {
             toReplace.add(item);
         }
     }
+
     public void start(Stage primaryStage) {
-    
+
         primaryStage.setTitle("Red 7");
-        
-    GameState gameState = new GameState();
-    System.out.println("Player " + gameState.getCurrentPlayerName() + " goes first!");
-        
-        
+
+        GameState gameState = new GameState();
+        String playerName = gameState.getCurrentPlayerName();
+        System.out.println("Player " + playerName + " goes first!");
 
         while (true) {
-            
-            displayAll(primaryStage, gameState);
-            
-            Player currPlayer = new Player();
-            Player opponent = new Player();
 
-            if (currentPlayer == 0) {
-                currPlayer.setHand(playerA.getHand());
-                currPlayer.setPalette(playerA.getPalette());
-                opponent.setHand(playerB.getHand());
-                opponent.setPalette(playerB.getPalette());
-            } else {
-                currPlayer.setHand(playerB.getHand());
-                currPlayer.setPalette(playerB.getPalette());
-                opponent.setHand(playerA.getHand());
-                opponent.setPalette(playerA.getPalette());
-            }
-            
+            displayAll(primaryStage, gameState);
+
+            Player currPlayer = gameState.getCurrentPlayer();
+            Player opponent = gameState.getOpponentPlayer();
+
             if (currPlayer.getHand().size() == 0) {
                 break;
             }
-            
+
             ArrayList<String> playChoices = new ArrayList<String>();
             playChoices.add("Play only to Palette");
             playChoices.add("Play only to Canvas");
@@ -477,13 +475,13 @@ public class Red7 extends Application {
             playChoices.add("Concede");
             ArrayList<String> choiceChosen = new ArrayList<String>();
             ChoiceDialog<String> dialog = new ChoiceDialog<String>(playChoices.get(0), playChoices);
-            dialog.setTitle("Player " + player + "'s turn.");
-            dialog.setHeaderText("Player " + player + ", Choose your move.");
+            dialog.setTitle("Player " + playerName + "'s turn.");
+            dialog.setHeaderText("Player " + playerName + ", Choose your move.");
             dialog.setContentText("Options:");
-        
-            System.out.println("Player " + player + "'s turn...");
+
+            System.out.println("Player " + playerName + "'s turn...");
             while (true) {
-                dialog.showAndWait().ifPresent( (response) -> {
+                dialog.showAndWait().ifPresent((response) -> {
                     choiceChosen.add(response);
                 });
                 if (choiceChosen.size() == 1) {
@@ -491,10 +489,10 @@ public class Red7 extends Application {
                 }
             }
             String choice = choiceChosen.get(0);
-            
+
             Player newPlayer = currPlayer.clonePlayer();
 
-            String newCanvasColor = canvasColor;
+            String newCanvasColor = gameState.getCanvasColor();
             boolean playToPalette = false;
             boolean playToCanvas = false;
             if (choice.equals("Play only to Palette")) {
@@ -507,41 +505,40 @@ public class Red7 extends Application {
             } else {
                 break;
             }
-            
-            if (playToPalette) { 
+
+            if (playToPalette) {
                 int paletteCardIndex = promptCardChoice(playerName, newPlayer.getHand(), "Palette");
                 moveCardToPalette(newPlayer, paletteCardIndex);
             }
-            
+
             if (playToCanvas) {
-	        int canvasCardIndex = promptCardChoice(playerName, newPlayer.getHand(), "Canvas");
-	        newCanvasColor = moveCardToCanvas(newPlayer, canvasCardIndex);
-	        }
-                
+                int canvasCardIndex = promptCardChoice(playerName, newPlayer.getHand(), "Canvas");
+                newCanvasColor = moveCardToCanvas(newPlayer, canvasCardIndex);
+            }
+
             if (playerWinning(newCanvasColor, newPlayer.getPalette(), opponent.getPalette())) {
                 System.out.println("That move works!");
                 currPlayer.copyFrom(newPlayer);
                 gameState.setCanvasColor(newCanvasColor);
-	            gameState.switchPlayer();
+                gameState.switchPlayer();
             } else {
                 System.out.println("That move doesn't work!");
             }
-            
+
         }
-        System.out.println("Player " + player + " loses!");  
+        System.out.println("Player " + playerName + " loses!");
     }
 
     public int promptCardChoice(String playerName, ArrayList<Card> cards, String action) {
         ArrayList<String> choices = createCardChoices(cards, action);
         String result = showChoiceDialog(
-            action + " card",
-            "Player " + playerName + ", pick your card",
-            "Options:",
-            choices
-        );
+                action + " card",
+                "Player " + playerName + ", pick your card",
+                "Options:",
+                choices);
         return Integer.parseInt(result.split(":")[0]);
     }
-    
+
     private ArrayList<String> createCardChoices(ArrayList<Card> cards, String action) {
         ArrayList<String> choices = new ArrayList<>();
         for (int i = 0; i < cards.size(); i++) {
@@ -550,7 +547,7 @@ public class Red7 extends Application {
         }
         return choices;
     }
-    
+
     private String showChoiceDialog(String title, String header, String content, ArrayList<String> choices) {
         ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
         dialog.setTitle(title);
